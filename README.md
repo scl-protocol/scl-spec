@@ -1,5 +1,5 @@
 # SCL:V1 Specification — Official Protocol Repository
-
+Status: Informational (Non-Normative)
 This repository is the **single authoritative source** for the SCL:V1 protocol.
 
 Everything here defines:
@@ -151,4 +151,4 @@ The C engine is fully aligned.
 All SDKs are being aligned using this repo.
 
 This repository forms the **bedrock of the SCL ecosystem**.
-EOF
+Normative behavior is defined exclusively by the versioned specification files under /spec/. This README is informational.
