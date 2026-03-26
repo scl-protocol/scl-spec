@@ -68,7 +68,7 @@ A valid SCL:V1 document MUST be exactly:
 2) One blank line (exactly `\n\n`)  
 3) Handles block  
 4) Immediately followed by SCL block **with no blank line between**  
-5) End of document exactly at the final `}` of the SCL block (no extra bytes)
+5) End of document either immediately after the final } of the SCL block, or with exactly one trailing LF (0x0A) followed by EOF.
 
 **No other blank lines are permitted anywhere else in the document.**  
 (A “blank line” is a physical line consisting of exactly LF with no preceding bytes.)
@@ -200,7 +200,8 @@ The SCL block MUST be:
 - Opening line exactly: `scl {` followed immediately by LF (`\n`).
   - No trailing spaces, nothing after `{`.
 
-- The document MUST end **immediately** after the closing `}` that terminates the SCL block with **no newline and no trailing bytes**.
+- The document MUST end **immediately** after the closing `}` that terminates the SCL block or with exactly one trailing LF (0x0A) followed by EOF.
+- The optional trailing LF is not part of the SCL structure and MUST NOT be included in the parsed content or AST, or canonical JSON.
 
 **Missing SCL block → E104**  
 **EOF before SCL block closes → E105**
@@ -233,7 +234,8 @@ Rules:
 - Each quoted token MUST contain no forbidden control characters (per §0.5).
 
 Termination:
-- Quoted mode ends only when the next line is exactly `}` and the document ends immediately after that `}` (i.e., `}` is immediately followed by EOF with no trailing LF).
+Quoted mode terminates at a line exactly equal to `}`.
+After this byte, the document MUST end immediately or contain exactly one trailing LF (0x0A) followed by EOF.
 
 AST content construction:
 - For each quoted line, strip outer quotes and take inner bytes.
@@ -248,8 +250,8 @@ Raw mode begins when the first content line after `scl {\n` does NOT begin (afte
 Rules:
 1) Raw content begins on the line after `scl {\n`.
 2) Raw mode ends only when the **final** bytes of the document form one terminator line matching exactly:
-   - optional spaces (`0x20`)*, then `}` (`0x7D`), then **EOF**
-   - That is: `^[ ]*}$` followed immediately by EOF (no trailing LF).
+   - optional spaces (`0x20`)*, then `}` (`0x7D`).
+   - After this byte, the document MUST end immediately or contain exactly one trailing LF (`0x0A`) followed by EOF.
 3) Terminator whitespace is structural:
    - If a candidate terminator line matches `^[ ]*}[ ]+$` (i.e., `}` followed by spaces before LF/EOF), this MUST raise **E104** at the first trailing space byte after `}`.
 4) Empty physical lines within raw content are allowed and are treated as content; the document-level “no other blank lines” restriction applies only outside the SCL block (i.e., it does not constrain raw-mode content).
@@ -379,7 +381,7 @@ Everything not explicitly allowed by this spec is forbidden, including:
 - Nested blocks
 - Alternative keywords/casing
 - Extra blank lines (outside raw-mode content as described in §4.2)
-- Trailing bytes after the final `}`
+- Trailing bytes after the final `}` of the SCL block, except for a single optional trailing LF (`0x0A`)
 
 ---
 
